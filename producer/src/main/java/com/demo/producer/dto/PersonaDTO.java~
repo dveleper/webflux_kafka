@@ -1,0 +1,16 @@
+package com.demo.producer.dto;
+
+import lombok.Data;
+
+@Data
+public class PersonaDTO {
+    private String id;
+    private String nombre;
+    private int edad;
+
+    public PersonaDTO(String personaId, String nombre, int edad) {
+        this.id = personaId;
+        this.nombre = nombre;
+        this.edad = edad;
+    }
+}

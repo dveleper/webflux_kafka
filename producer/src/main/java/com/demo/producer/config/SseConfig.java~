@@ -1,0 +1,17 @@
+package com.demo.producer.config;
+
+import com.demo.producer.dto.PersonaDTO;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import reactor.core.publisher.Sinks;
+
+@Configuration
+public class SseConfig {
+
+    @Bean
+    public Sinks.Many<PersonaDTO> personaSink() {
+        // Crea un Sink que puede tener múltiples suscriptores (multicast)
+        // y que guarda en caché los eventos para los suscriptores que lleguen tarde.
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+}

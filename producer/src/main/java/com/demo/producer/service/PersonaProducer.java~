@@ -1,0 +1,31 @@
+package com.demo.producer.service;
+
+import com.demo.producer.avro.Persona;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+
+@Slf4j
+@Service
+public class PersonaProducer {
+
+    private final KafkaTemplate<String, Persona> kafkaTemplate;
+    private final String topic;
+
+    public PersonaProducer(KafkaTemplate<String, Persona> kafkaTemplate,
+                           @Value("${app.kafka.topic}") String topic) {
+        this.kafkaTemplate = kafkaTemplate;
+        this.topic = topic;
+    }
+
+    public void enviarEvento(Persona persona) {
+        kafkaTemplate.send(topic, persona.getId(), persona).whenComplete((result, ex) -> {
+            if (ex != null) {
+                log.error("Error al enviar mensaje a Kafka para persona: {}", persona.getId(), ex);
+            } else {
+                log.info("Evento enviado a Kafka para persona: {}. Offset: {}", persona.getId(), result.getRecordMetadata().offset());
+            }
+        });
+    }
+}

@@ -1,0 +1,31 @@
+package com.demo.producer.hub;
+
+import com.demo.producer.dto.PersonaDTO;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
+
+@Configuration
+public class PersonaEventHub {
+
+    /**
+     * Sinks.Many es un publicador de Flux que puede emitir eventos de forma segura a múltiples suscriptores.
+     * 'multicast()' asegura que cada suscriptor reciba todos los eventos desde el punto de su suscripción.
+     * 'onBackpressureBuffer()' almacena eventos si los suscriptores no pueden mantener el ritmo, evitando que se pierdan.
+     */
+    @Bean
+    public Sinks.Many<PersonaDTO> personaSink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    /**
+     * Expone el Sink como un Flux para que los suscriptores (como el controlador) puedan consumirlo.
+     * @param personaSink El bean del Sink inyectado por Spring.
+     * @return Un Flux de eventos de PersonaDTO.
+     */
+    @Bean
+    public Flux<PersonaDTO> personaStream(Sinks.Many<PersonaDTO> personaSink) {
+        return personaSink.asFlux();
+    }
+}

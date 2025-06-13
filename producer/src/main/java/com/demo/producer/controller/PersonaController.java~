@@ -1,0 +1,44 @@
+package com.demo.producer.controller;
+
+import com.demo.producer.dto.PersonaDTO;
+import com.demo.producer.service.PersonaService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
+
+@RestController
+@RequestMapping("/personas")
+@RequiredArgsConstructor
+public class PersonaController {
+
+    private final PersonaService personaService;
+    private final Sinks.Many<PersonaDTO> personaSink;
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<com.demo.producer.domain.Persona> crearPersona(@RequestBody PersonaDTO personaDTO) {
+        return personaService.crearPersona(personaDTO);
+    }
+
+    @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<PersonaDTO> streamPersonas() {
+        return personaSink.asFlux();
+    }
+
+    @GetMapping
+    public Flux<PersonaDTO> obtenerTodasLasPersonas() {
+        return personaService.obtenerTodasLasPersonas();
+    }
+
+    @GetMapping("/{dbId}")
+    public Mono<ResponseEntity<PersonaDTO>> obtenerPersonaPorId(@PathVariable Integer dbId) {
+        return personaService.obtenerPersonaPorId(dbId)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+}
