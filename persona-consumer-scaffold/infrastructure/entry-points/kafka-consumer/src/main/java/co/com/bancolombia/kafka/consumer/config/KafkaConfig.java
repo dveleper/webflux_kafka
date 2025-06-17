@@ -13,9 +13,25 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.Map;
 
+/**
+ * Configuración de Spring para el consumidor de Kafka.
+ * <p>
+ * Define los beans necesarios para crear y configurar la infraestructura
+ * que permite a la aplicación consumir mensajes de un tópico de Kafka.
+ */
 @Configuration
 public class KafkaConfig {
 
+    /**
+     * Crea y configura la fábrica de consumidores de Kafka.
+     * <p>
+     * Este bean es responsable de establecer las propiedades de conexión con el bróker de Kafka
+     * y de definir los deserializadores para la clave y el valor de los mensajes.
+     * Utiliza las propiedades definidas en {@code application.yaml}.
+     *
+     * @param properties Propiedades de Kafka autoconfiguradas por Spring Boot.
+     * @return una {@link ConsumerFactory} configurada para consumir mensajes con clave String y valor {@link PersonaDTO}.
+     */
     @Bean
     public ConsumerFactory<String, PersonaDTO> consumerFactory(KafkaProperties properties) {
         Map<String, Object> props = properties.buildConsumerProperties(null);
@@ -26,6 +42,16 @@ public class KafkaConfig {
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(PersonaDTO.class, false));
     }
 
+    /**
+     * Crea la fábrica de contenedores de listeners de Kafka.
+     * <p>
+     * Este bean utiliza la {@link ConsumerFactory} para construir el contenedor que gestionará
+     * el ciclo de vida del listener (ej. el método anotado con {@code @KafkaListener}).
+     * Es el puente entre la configuración del consumidor y el código que procesa el mensaje.
+     *
+     * @param consumerFactory La fábrica de consumidores a utilizar.
+     * @return una {@link ConcurrentKafkaListenerContainerFactory} lista para ser usada por los listeners.
+     */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, PersonaDTO> kafkaListenerContainerFactory(
             ConsumerFactory<String, PersonaDTO> consumerFactory) {
